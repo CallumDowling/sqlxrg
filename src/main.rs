@@ -1,4 +1,4 @@
-// Origininal copyright notice
+// Original copyright notice
 // Copyright (c) 2023-, Germano Rizzo <oss /AT/ germanorizzo /DOT/ it>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");

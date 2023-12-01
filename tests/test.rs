@@ -1,4 +1,4 @@
-// Origininal copyright notice
+// Original copyright notice
 // Copyright (c) 2023-, Germano Rizzo <oss /AT/ germanorizzo /DOT/ it>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -129,9 +129,6 @@ mod tests {
         println!("{}", json!(json_body_1));
         println!("pretty:\n\n{}", serde_json::to_string_pretty(&json_body_1).unwrap());
     
-
-
-
         let expected_0 = json!(
             {"results":[{"tag":"drop_db","success":"true","rowsAffected":1,"lastInsertId":0},{"success":"true","rowsAffected":1,"lastInsertId":0},{"success":"true","resultsSet":[{"Database":"information_schema"},{"Database":"mysql"},{"Database":"performance_schema"},{"Database":"rust_test"},{"Database":"sys"},{"Database":"test"}]},{"tag":"change_db","success":"true","rowsAffected":0,"lastInsertId":0},{"success":"true","rowsAffected":0,"lastInsertId":0}]}
         );

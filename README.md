@@ -11,10 +11,13 @@ sqlxrg --bind_host localhost --port 8083
 ```
 
 It's possible to make a POST call to `http://localhost:8083`.
+
 With headers:
+```
     content-type: application/json
     connection-string: mariadb://<user>:<pass>@<host>:<port>/<database>
         where database is optional and host/port is releative to where this software is set deployed
+```
 
 with the following body:
 
