@@ -1,0 +1,45 @@
+[package]
+authors = ["Callum Dowling"]
+description = "A Mariadb remote gateway - query Mariadb via HTTP. Inspired by sqliterg: https://github.com/proofrock/sqliterg"
+name = "sqlxrg"
+version = "1.0.0"
+edition = "2021"
+
+[dependencies]
+actix-cors = "~0"
+actix-files = "~0"
+actix-web = "~4"
+actix-web-httpauth = "~0"
+clap = { version = "~4", features = [ "derive" ] }
+env_logger = "*"
+hex = "~0"
+lazy_static = "*"
+ring = "~0"
+serde = { version = "~1", features = ["derive"] }
+serde_derive = "~1"
+serde_json = { version = "1.0.108", features = ["preserve_order"] }
+serde_rusqlite = "~0"
+serde_yaml = "~0"
+serde_with = "1.6.0"
+shellexpand = "~3"
+sqlx = { version = "0.7.3", features = [ "runtime-async-std", "tls-native-tls", "mysql", "time", "chrono"  ] }
+dotenv = "0.15.0"
+dotenv_codegen = "0.15.0"
+async_once = "0.2.6"
+
+
+[profile.dev]
+opt-level = 0
+overflow-checks = true
+strip = false
+lto = false
+
+[profile.release]
+opt-level = 3
+overflow-checks = false
+strip = true
+lto = true
+
+[[bin]]
+name = "sqlxrg"
+path = "src/main.rs"
