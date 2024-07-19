@@ -39,6 +39,7 @@ async fn do_query(
 ) -> ResponseEnum {
     let mut qry = sqlx::query(sql);
     let mut arr = vec![];
+    println!("Tmp debug called do query");
     match values {
         Some(p) => match p {
             Value::Array(x) => {
@@ -97,13 +98,16 @@ async fn do_query(
 
     let mut all_rows = vec![];
     for row in results {
+        println!("Tmp debug row: {:?}", row);
+
         let cols = row.columns();
         let mut map = Map::<String, Value>::new();
         for col in cols {
+        println!("Tmp debug col: {:?}", col);
             let type_info: &MySqlTypeInfo = col.type_info();
             if type_info.is_null() {
                 //May need to do something here
-                //println!("Value: NULL");
+                println!("Value: NULL");
             }
 
             //https://github.com/launchbadge/sqlx/issues/182
@@ -116,171 +120,118 @@ async fn do_query(
                     };
                 }
             };
+            println!("raw_value.type_info().name() = {:?}", raw_value.type_info().name());
 
             match raw_value.type_info().name() {
-                "FLOAT" | "FLOAT4" | "FLOAT8" => {
-                    match <f32 as Decode<sqlx::mysql::MySql>>::decode(raw_value) {
-                        Ok(val) => {
-                            map.insert(col.name().to_string(), json!(val));
-                        }
-                        Err(e) => {
-                            return ResponseEnum::Error {
-                                tag: tag.clone(),
-                                error: e,
-                            };
-                        }
+                "FLOAT" | "FLOAT4" | "FLOAT8" => match <f32 as Decode<sqlx::mysql::MySql>>::decode(raw_value) {
+                    Ok(val) => {
+                        map.insert(col.name().to_string(), json!(val));
+                    },
+                    Err(_) => {
+                        map.insert(col.name().to_string(), json!(null));
                     }
                 }
-                "REAL" | "NUMERIC" | "DECIMAL" | "DOUBLE" => {
-                    match <f64 as Decode<sqlx::mysql::MySql>>::decode(raw_value) {
-                        Ok(val) => {
-                            map.insert(col.name().to_string(), json!(val));
-                        }
-                        Err(e) => {
-                            return ResponseEnum::Error {
-                                tag: tag.clone(),
-                                error: e,
-                            };
-                        }
+                "REAL" | "NUMERIC" | "DECIMAL" | "DOUBLE" => match <f64 as Decode<sqlx::mysql::MySql>>::decode(raw_value) {
+                    Ok(val) => {
+                        map.insert(col.name().to_string(), json!(val));
+                    },
+                    Err(_) => {
+                        map.insert(col.name().to_string(), json!(null));
                     }
-                }
+                } 
                 "INT8" | "BIGINT" | "INTEGER" => {
                     match <i64 as Decode<sqlx::mysql::MySql>>::decode(raw_value) {
                         Ok(val) => {
                             map.insert(col.name().to_string(), json!(val));
-                        }
-                        Err(e) => {
-                            return ResponseEnum::Error {
-                                tag: tag.clone(),
-                                error: e,
-                            };
+                        },
+                        Err(_) => {
+                            map.insert(col.name().to_string(), json!(null));
                         }
                     }
                 }
-                "INT8 UNSIGNED" | "BIGINT UNSIGNED" | "INTEGER UNSIGNED" => {
-                    match <u64 as Decode<sqlx::mysql::MySql>>::decode(raw_value) {
-                        Ok(val) => {
-                            map.insert(col.name().to_string(), json!(val));
-                        }
-                        Err(e) => {
-                            return ResponseEnum::Error {
-                                tag: tag.clone(),
-                                error: e,
-                            };
-                        }
+                "INT8 UNSIGNED" | "BIGINT UNSIGNED" | "INTEGER UNSIGNED" => match <u64 as Decode<sqlx::mysql::MySql>>::decode(raw_value) {
+                    Ok(val) => {
+                        map.insert(col.name().to_string(), json!(val));
+                    },
+                    Err(_) => {
+                        map.insert(col.name().to_string(), json!(null));
                     }
                 }
                 "INT" | "INT4" => match <i32 as Decode<sqlx::mysql::MySql>>::decode(raw_value) {
                     Ok(val) => {
                         map.insert(col.name().to_string(), json!(val));
-                    }
-                    Err(e) => {
-                        return ResponseEnum::Error {
-                            tag: tag.clone(),
-                            error: e,
-                        };
+                    },
+                    Err(_) => {
+                        map.insert(col.name().to_string(), json!(null));
                     }
                 },
-                "INT UNSIGNED" | "INT4 UNSIGNED" => {
-                    match <u32 as Decode<sqlx::mysql::MySql>>::decode(raw_value) {
-                        Ok(val) => {
-                            map.insert(col.name().to_string(), json!(val));
-                        }
-                        Err(e) => {
-                            return ResponseEnum::Error {
-                                tag: tag.clone(),
-                                error: e,
-                            };
-                        }
-                    }
-                }
-                "INT2" | "SMALLINT" => match <i16 as Decode<sqlx::mysql::MySql>>::decode(raw_value)
-                {
+                "INT UNSIGNED" | "INT4 UNSIGNED" => match <u32 as Decode<sqlx::mysql::MySql>>::decode(raw_value) {
                     Ok(val) => {
                         map.insert(col.name().to_string(), json!(val));
-                    }
-                    Err(e) => {
-                        return ResponseEnum::Error {
-                            tag: tag.clone(),
-                            error: e,
-                        };
+                    },
+                    Err(_) => {
+                        map.insert(col.name().to_string(), json!(null));
                     }
                 },
-                "INT2 UNSIGNED" | "SMALLINT UNSIGNED" => {
-                    match <u16 as Decode<sqlx::mysql::MySql>>::decode(raw_value) {
-                        Ok(val) => {
-                            map.insert(col.name().to_string(), json!(val));
-                        }
-                        Err(e) => {
-                            return ResponseEnum::Error {
-                                tag: tag.clone(),
-                                error: e,
-                            };
-                        }
+                "INT2" | "SMALLINT" => match <i16 as Decode<sqlx::mysql::MySql>>::decode(raw_value) {
+                    Ok(val) => {
+                        map.insert(col.name().to_string(), json!(val));
+                    },
+                    Err(_) => {
+                        map.insert(col.name().to_string(), json!(null));
                     }
-                }
+                },
+                "INT2 UNSIGNED" | "SMALLINT UNSIGNED" => match <u16 as Decode<sqlx::mysql::MySql>>::decode(raw_value) {
+                    Ok(val) => {
+                        map.insert(col.name().to_string(), json!(val));
+                    },
+                    Err(_) => {
+                        map.insert(col.name().to_string(), json!(null));
+                    }
+                },
                 "INT1" | "TINYINT" => match <i8 as Decode<sqlx::mysql::MySql>>::decode(raw_value) {
                     Ok(val) => {
                         map.insert(col.name().to_string(), json!(val));
-                    }
-                    Err(e) => {
-                        return ResponseEnum::Error {
-                            tag: tag.clone(),
-                            error: e,
-                        };
+                    },
+                    Err(_) => {
+                        map.insert(col.name().to_string(), json!(null));
                     }
                 },
-                "INT1 UNSIGNED" | "TINYINT UNSIGNED" => {
-                    match <u8 as Decode<sqlx::mysql::MySql>>::decode(raw_value) {
-                        Ok(val) => {
-                            map.insert(col.name().to_string(), json!(val));
-                        }
-                        Err(e) => {
-                            return ResponseEnum::Error {
-                                tag: tag.clone(),
-                                error: e,
-                            };
-                        }
+                "INT1 UNSIGNED" | "TINYINT UNSIGNED" => match <u8 as Decode<sqlx::mysql::MySql>>::decode(raw_value) {
+                    Ok(val) => {
+                        map.insert(col.name().to_string(), json!(val));
+                    },
+                    Err(_) => {
+                        map.insert(col.name().to_string(), json!(null));
                     }
-                }
+                },
                 "BOOL" | "BOOLEAN" => match <bool as Decode<sqlx::mysql::MySql>>::decode(raw_value)
                 {
                     Ok(val) => {
                         map.insert(col.name().to_string(), json!(val));
-                    }
-                    Err(e) => {
-                        return ResponseEnum::Error {
-                            tag: tag.clone(),
-                            error: e,
-                        };
+                    },
+                    Err(_) => {
+                        map.insert(col.name().to_string(), json!(null));
                     }
                 },
-                "DATE" => {
-                    match <chrono::NaiveDate as Decode<sqlx::mysql::MySql>>::decode(raw_value) {
-                        Ok(val) => {
-                            map.insert(col.name().to_string(), json!(val.to_string()));
-                        }
-                        Err(e) => {
-                            return ResponseEnum::Error {
-                                tag: tag.clone(),
-                                error: e,
-                            };
-                        }
+                "DATE" => match <chrono::NaiveDate as Decode<sqlx::mysql::MySql>>::decode(raw_value) {
+                    Ok(val) => {
+                        map.insert(col.name().to_string(), json!(val.to_string()));
+                    },
+                    Err(_) => {
+                        map.insert(col.name().to_string(), json!(null));
                     }
                 }
-                "TIME" => {
-                    match <chrono::NaiveTime as Decode<sqlx::mysql::MySql>>::decode(raw_value) {
-                        Ok(val) => {
-                            map.insert(col.name().to_string(), json!(val.to_string()));
-                        }
-                        Err(e) => {
-                            return ResponseEnum::Error {
-                                tag: tag.clone(),
-                                error: e,
-                            };
-                        }
+                
+                "TIME" => match <chrono::NaiveTime as Decode<sqlx::mysql::MySql>>::decode(raw_value) {
+                    Ok(val) => {
+                        map.insert(col.name().to_string(), json!(val.to_string()));
+                    }
+                    Err(_) => {
+                        map.insert(col.name().to_string(), json!(null));
                     }
                 }
+                
                 "DATETIME" | "DATETIME2" | "DATETIMEOFFSET" | "TIMESTAMP" | "TIMESTAMPTZ" => {
                     let date_time =
                         <chrono::NaiveDateTime as Decode<sqlx::mysql::MySql>>::decode(raw_value)
@@ -293,29 +244,22 @@ async fn do_query(
                         })),
                     );
                 }
-                "JSON" | "JSON[]" | "JSONB" | "JSONB[]" => {
-                    match <Value as Decode<sqlx::mysql::MySql>>::decode(raw_value) {
-                        Ok(val) => {
-                            map.insert(col.name().to_string(), json!(val));
-                        }
-                        Err(e) => {
-                            return ResponseEnum::Error {
-                                tag: tag.clone(),
-                                error: e,
-                            };
-                        }
+                "JSON" | "JSON[]" | "JSONB" | "JSONB[]" => match <Value as Decode<sqlx::mysql::MySql>>::decode(raw_value) {
+                    Ok(val) => {
+                        map.insert(col.name().to_string(), json!(val));
+                    },
+                    Err(_) => {
+                        map.insert(col.name().to_string(), json!(null));
                     }
                 }
+                
                 // Deserialize as a string by default
                 _ => match <String as Decode<sqlx::mysql::MySql>>::decode(raw_value) {
                     Ok(val) => {
                         map.insert(col.name().to_string(), json!(val));
-                    }
-                    Err(e) => {
-                        return ResponseEnum::Error {
-                            tag: tag.clone(),
-                            error: e,
-                        };
+                    },
+                    Err(_) => {
+                        map.insert(col.name().to_string(), json!(null));
                     }
                 },
             }

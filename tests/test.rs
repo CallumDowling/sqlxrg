@@ -101,9 +101,38 @@ mod tests {
                 {   
                     "tag": "fail on purpose",
                     "query": "UPDATE test set _id=4 WHERE _not_present=abc;"
-                }
+                },
                 ]
             });
+
+        let payload_2 = 
+            json!({
+                "transaction": [
+                {
+                    "statement": "CREATE TABLE left_join_test_table_1 (_id_1 INT NOT NULL, _test_1 TEXT);"
+                },
+                {
+                    "statement": "CREATE TABLE left_join_test_table_2 (_id_2 INT NOT NULL, _test_2 TEXT);"
+                },
+                {
+                    "statement": "INSERT INTO left_join_test_table_2 (_id_2, _test_2) VALUES (1, 'should be present tbl2');"
+                },
+                {
+                    "statement": "INSERT INTO left_join_test_table_2 (_id_2, _test_2) VALUES (2, 'should be present tbl2');"
+                },
+
+                {
+                    "statement": "INSERT INTO left_join_test_table_1 (_id_1, _test_1) VALUES (1, 'should be present tbl1');"
+                },
+                {
+                    "statement": "INSERT INTO left_join_test_table_1 (_id_1, _test_1) VALUES (3, 'should be absent');"
+                },
+                {
+                    "query": "SELECT * FROM left_join_test_table_2 LEFT JOIN left_join_test_table_1 ON left_join_test_table_2._id_2=left_join_test_table_1._id_1;"
+                },
+                ]
+            });
+
 
         let req_0 = test::TestRequest::post()
             .uri("/test")
@@ -121,16 +150,40 @@ mod tests {
             .to_request();
         let resp_1 = test::call_service(&app, req_1).await; 
             
+        let req_2 = test::TestRequest::post()
+            .uri("/test")
+            .insert_header(ContentType::json())
+            .insert_header(("connection-string", format!("{}/rust_test",test_connection_string)))
+            .set_json(payload_2)
+            .to_request();
+        let resp_2 = test::call_service(&app, req_2).await; 
        
-        let json_body_0: serde_json::Value = test::read_body_json(resp_0).await;
+        let mut json_body_0: serde_json::Value = test::read_body_json(resp_0).await;
+        //Dropping rows_affected key, because there could be many items in the live db which will
+        //fail the test
+        //
+        let nested = json_body_0.get_mut("results")
+            .expect("should exist")
+            .as_array_mut()
+            .expect("should be an array")
+            .get_mut(0)
+            .expect("should have 0th element")
+            .as_object_mut()
+            .expect("should be and object");
+        nested.remove("rowsAffected");
+
         let json_body_1: serde_json::Value = test::read_body_json(resp_1).await;
+        let json_body_2: serde_json::Value = test::read_body_json(resp_2).await;
+        
         println!("{}", json!(json_body_0));
-        println!("pretty:\n\n{}", serde_json::to_string_pretty(&json_body_0).unwrap());
+        println!("pretty0:\n\n{}", serde_json::to_string_pretty(&json_body_0).unwrap());
         println!("{}", json!(json_body_1));
-        println!("pretty:\n\n{}", serde_json::to_string_pretty(&json_body_1).unwrap());
+        println!("pretty1:\n\n{}", serde_json::to_string_pretty(&json_body_1).unwrap());
+        println!("{}", json!(json_body_2));
+        println!("pretty2:\n\n{}", serde_json::to_string_pretty(&json_body_2).unwrap());
     
         let expected_0 = json!(
-            {"results":[{"tag":"drop_db","success":"true","rowsAffected":1,"lastInsertId":0},{"success":"true","rowsAffected":1,"lastInsertId":0},{"success":"true","resultsSet":[{"Database":"information_schema"},{"Database":"mysql"},{"Database":"performance_schema"},{"Database":"rust_test"},{"Database":"sys"},{"Database":"test"}]},{"tag":"change_db","success":"true","rowsAffected":0,"lastInsertId":0},{"success":"true","rowsAffected":0,"lastInsertId":0}]}
+            {"results":[{"tag":"drop_db","success":"true","lastInsertId":0},{"success":"true","rowsAffected":1,"lastInsertId":0},{"success":"true","resultsSet":[{"Database":"information_schema"},{"Database":"mysql"},{"Database":"performance_schema"},{"Database":"rust_test"},{"Database":"sys"},{"Database":"test"}]},{"tag":"change_db","success":"true","rowsAffected":0,"lastInsertId":0},{"success":"true","rowsAffected":0,"lastInsertId":0}]}
         );
 
         let expected_1 = json!(
