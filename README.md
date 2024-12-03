@@ -1,6 +1,6 @@
 # 🌿 Introduction
 
-**sqlxrg** is a server-side application that, applied to one or more SQLite files, allows to perform SQL queries and statements on them via REST (or better, JSON over HTTP).
+**sqlxrg** is a server-side api that translates json encoded sql transactions currently only for mysql
 
 Based https://github.com/proofrock/sqliterg by Germano Rizzo. This project uses most the same same request / response format, but connects with a mysql/mariadb instance instead of creating an sqlite db. Accordingly most the the config settings are gone. 
 
