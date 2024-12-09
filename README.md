@@ -72,6 +72,21 @@ To obtaining an answer of:
 ```
 N.B. tag is optional 
 
+It is also possible and recommended to use variable bindings like so
+```json
+{
+  "transaction": [
+    {
+        "statement": "CREATE TABLE null_test (_id_1 INT NOT NULL, _test_1 TEXT NULL, _test_2 INT NULL);"
+    },
+    {
+        "statement": "INSERT INTO null_test(_id_1, _test_1, _test_2) VALUES(0, ?, ?);",
+        "values": ["test", 5]
+    }
+  ]
+}
+```
+
 ###
 Some sql types returned may fail, see tests for what is covered
 

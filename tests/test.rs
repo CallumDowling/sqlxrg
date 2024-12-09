@@ -133,11 +133,31 @@ mod tests {
                 ]
             });
 
+        //using null in values
+        let payload_3 = 
+            json!({
+                "transaction": [
+                {
+                    "statement": "CREATE TABLE null_test (_id_1 INT NOT NULL, _test_1 TEXT NULL, _test_2 INT NULL);"
+                },
+                {
+                    "statement": "INSERT INTO null_test(_id_1, _test_1, _test_2) VALUES(0, ?, ?);",
+                    "values": ["test", 5]
+                },
+                {
+                    "statement": "INSERT INTO null_test(_id_1, _test_1, _test_2) VALUES(1, ?, ?);",
+                    "values": [null, null]
+                },
+                {
+                    "query": "SELECT * FROM null_test;"
+                },
+                ]
+            });
 
         let req_0 = test::TestRequest::post()
             .uri("/test")
             .insert_header(ContentType::json())
-            .insert_header(("connection-string", test_connection_string))
+            .insert_header(("connection-string", format!("{}/rust_test",test_connection_string)))
             .set_json(payload_0)
             .to_request();
         let resp_0 = test::call_service(&app, req_0).await;
@@ -145,7 +165,7 @@ mod tests {
         let req_1 = test::TestRequest::post()
             .uri("/test")
             .insert_header(ContentType::json())
-            .insert_header(("connection-string", test_connection_string))
+            .insert_header(("connection-string", format!("{}/rust_test",test_connection_string)))
             .set_json(payload_1)
             .to_request();
         let resp_1 = test::call_service(&app, req_1).await; 
@@ -157,6 +177,14 @@ mod tests {
             .set_json(payload_2)
             .to_request();
         let resp_2 = test::call_service(&app, req_2).await; 
+        
+        let req_3 = test::TestRequest::post()
+            .uri("/test")
+            .insert_header(ContentType::json())
+            .insert_header(("connection-string", format!("{}/rust_test",test_connection_string)))
+            .set_json(payload_3)
+            .to_request();
+        let resp_3 = test::call_service(&app, req_3).await; 
        
         let mut json_body_0: serde_json::Value = test::read_body_json(resp_0).await;
         //Dropping rows_affected key, because there could be many items in the live db which will
@@ -174,6 +202,7 @@ mod tests {
 
         let json_body_1: serde_json::Value = test::read_body_json(resp_1).await;
         let json_body_2: serde_json::Value = test::read_body_json(resp_2).await;
+        let json_body_3: serde_json::Value = test::read_body_json(resp_3).await;
         
         println!("{}", json!(json_body_0));
         println!("pretty0:\n\n{}", serde_json::to_string_pretty(&json_body_0).unwrap());
@@ -181,6 +210,8 @@ mod tests {
         println!("pretty1:\n\n{}", serde_json::to_string_pretty(&json_body_1).unwrap());
         println!("{}", json!(json_body_2));
         println!("pretty2:\n\n{}", serde_json::to_string_pretty(&json_body_2).unwrap());
+        println!("{}", json!(json_body_3));
+        println!("pretty3:\n\n{}", serde_json::to_string_pretty(&json_body_3).unwrap());
     
         let expected_0 = json!(
             {"results":[{"tag":"drop_db","success":"true","lastInsertId":0},{"success":"true","rowsAffected":1,"lastInsertId":0},{"success":"true","resultsSet":[{"Database":"information_schema"},{"Database":"mysql"},{"Database":"performance_schema"},{"Database":"rust_test"},{"Database":"sys"},{"Database":"test"}]},{"tag":"change_db","success":"true","rowsAffected":0,"lastInsertId":0},{"success":"true","rowsAffected":0,"lastInsertId":0}]}

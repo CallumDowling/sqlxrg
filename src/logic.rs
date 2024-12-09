@@ -19,9 +19,7 @@
 use actix_web::{error, web, HttpRequest};
 use serde_json::{json, Map, Value};
 use sqlx::{
-    mysql::{MySqlConnectOptions, MySqlTypeInfo},
-    types::chrono::{self, DateTime},
-    Column, Decode, MySql, MySqlPool, Pool, Row, Transaction, TypeInfo, ValueRef,
+    mysql::{MySqlConnectOptions, MySqlTypeInfo}, types::chrono::{self, DateTime}, Column, Decode, Execute, MySql, MySqlPool, Pool, Row, Transaction, TypeInfo, ValueRef
 };
 use std::result::Result;
 
@@ -60,6 +58,9 @@ async fn do_query(
 
     for x in arr {
         match x {
+            Value::Null => {
+                qry = qry.bind(Option::<String>::None)
+            },
             Value::String(s) => {
                 qry = qry.bind(s);
             }
@@ -304,6 +305,10 @@ async fn do_single_statement(
 
     for x in arr {
         match x {
+            Value::Null => {
+                
+                stmt = stmt.bind(Option::<String>::None)
+            },
             Value::String(s) => {
                 stmt = stmt.bind(s);
             }
