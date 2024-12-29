@@ -1,6 +1,6 @@
 # 🌿 Introduction
 
-**sqlxrg** is a server-side api that translates json encoded sql transactions currently only for mysql
+**sqlxrg** is a web api that translates json encoded sql transactions, currently supporting mysql/mariadb
 
 Based https://github.com/proofrock/sqliterg by Germano Rizzo. This project uses most the same same request / response format, but connects with a mysql/mariadb instance instead of creating an sqlite db. Accordingly most the the config settings are gone. 
 
@@ -40,7 +40,7 @@ with the following body:
 }
 ```
 
-To obtaining an answer of:
+Obtaining an answer of:
 
 ```json
 {
@@ -72,7 +72,7 @@ To obtaining an answer of:
 ```
 N.B. tag is optional 
 
-It is also possible and recommended to use variable bindings like so
+It is also possible and recommended to use variable bindings like so:
 ```json
 {
   "transaction": [
